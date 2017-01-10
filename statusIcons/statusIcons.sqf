@@ -78,22 +78,41 @@
 		};
 	};
 	
-	sb_getIcon = {
+	sb_getIconBlood = {
 		_value = _this select 0;
-		_icon = "100";
+		_icon = "blood100";
 		
-		if (_value >= 100 ) then 							{ _icon ="100";	};
-		if (_value >=90 && _value < 100 ) then 	{ _icon ="90";		};
-		if (_value >=80 && _value < 90 ) then 		{ _icon ="80";		};
-		if (_value >=70 && _value < 80 ) then 		{ _icon ="70";		};
-		if (_value >=60 && _value < 70 ) then 		{ _icon ="60";		};
-		if (_value >=50 && _value < 60 ) then 		{ _icon ="50";		};
-		if (_value >=40 && _value < 50 ) then 		{ _icon ="40";		};
-		if (_value >=30 && _value < 40 ) then 		{ _icon ="30";		};
-		if (_value >=20 && _value < 30 ) then 		{ _icon ="20";		};
-		if (_value >=10 && _value < 20 ) then 		{ _icon ="10";		};
-		if (_value >=1 && _value < 10 ) then 		{ _icon ="1";		};
-		if (_value < 1 ) then 								{ _icon ="0";		};
+		if (_value >= 100 ) then 					{ _icon ="blood100";	};
+		if (_value >=70 && _value < 80 ) then 		{ _icon ="blood75";		};
+		if (_value >=50 && _value < 60 ) then 		{ _icon ="blood50";		};
+		if (_value >=20 && _value < 30 ) then 		{ _icon ="blood25";		};
+		if (_value >=10 && _value < 20 ) then 		{ _icon ="blood10";		};
+		if (_value >=1 && _value < 10 ) then 		{ _icon ="blood5";		};
+		if (_value < 1 ) then 						{ _icon ="blood0";		};
+		
+		_icon
+	};
+	sb_getIconHunger = {
+		_value = _this select 0;
+		_icon = "hunger100";
+		
+		if (_value >= 100 ) then 					{ _icon ="hunger100";	};
+		if (_value >=70 && _value < 80 ) then 		{ _icon ="hunger75";	};
+		if (_value >=50 && _value < 60 ) then 		{ _icon ="hunger50";	};
+		if (_value >=20 && _value < 30 ) then 		{ _icon ="hunger25";	};
+		if (_value < 1 ) then 						{ _icon ="hunger0";		};
+		
+		_icon
+	};
+	sb_getIconThirst = {
+		_value = _this select 0;
+		_icon = "thirst100";
+		
+		if (_value >= 100 ) then 					{ _icon ="thirst100";	};
+		if (_value >=70 && _value < 80 ) then 		{ _icon ="thirst75";	};
+		if (_value >=50 && _value < 60 ) then 		{ _icon ="thirst50";	};
+		if (_value >=20 && _value < 30 ) then 		{ _icon ="thirst25";	};
+		if (_value < 1 ) then 						{ _icon ="thirst0";		};
 		
 		_icon
 	};
@@ -149,17 +168,17 @@
 		_display = (uiNamespace getVariable "StatusIcons");
 		
 		if (_iconh != "-1") then {
-			(_display displayCtrl 13392) ctrlSetText format["statusIcons\circlebar\%1.paa",_iconh];
+			(_display displayCtrl 13392) ctrlSetText format["statusIcons\circlebar\blood\%1.paa",_iconh];
 			[(_display displayCtrl 13392)] call sb_fadeIn;
 		};
 		
 		if (_iconf != "-1") then {
-			(_display displayCtrl 13393) ctrlSetText format["statusIcons\circlebar\%1.paa",_iconf];
+			(_display displayCtrl 13393) ctrlSetText format["statusIcons\circlebar\hunger\%1.paa",_iconf];
 			[(_display displayCtrl 13393)] call sb_fadeIn;
 		};
 		
 		if (_iconw != "-1") then {
-			(_display displayCtrl 13394) ctrlSetText format["statusIcons\circlebar\%1.paa",_iconw];
+			(_display displayCtrl 13394) ctrlSetText format["statusIcons\circlebar\thirst\%1.paa",_iconw];
 			[(_display displayCtrl 13394)] call sb_fadeIn;
 		};
 		
@@ -171,16 +190,16 @@
 			(!isNil {round (ExileClientPlayerAttributes select 3)}) && (!isNil {round (ExileClientPlayerAttributes select 2)});
 		};
 		
-		systemChat "Initialising Status Icons...";
+		systemChat "Initialising DayZ Icons...";
 		player setVariable["sb_info",true];
 		player setVariable["infotoggled",false];
 		_health = round ((1 - (damage player)) * 100);
 		_hunger = round (ExileClientPlayerAttributes select 2);
 		_thirst = round (ExileClientPlayerAttributes select 3);
 		
-		_hpIcon = [_health] call sb_getIcon;
-		_hungerIcon = [_hunger] call sb_getIcon;
-		_thirstIcon = [_thirst] call sb_getIcon;
+		_hpIcon = [_health] call sb_getIconBlood;
+		_hungerIcon = [_hunger] call sb_getIconHunger;
+		_thirstIcon = [_thirst] call sb_getIconThirst;
 
 		_lastHp = _health;
 		_lastHunger = _hunger;
@@ -228,14 +247,38 @@
 			_lastArray = player getVariable "sb_lastArray";
 			_currentArray = [_health,_hunger,_thirst];
 			
-			_toUpdate = [0,0,0];
+			_toUpdateHealth = [0,0,0];
 			for "_i" from 0 to 2 do
 			{
-				_last = [(_lastArray select _i)] call sb_getIcon;
-				_cur = [(_currentArray select _i)] call sb_getIcon;
+				_last = [(_lastArray select _i)] call sb_getIconHealth;
+				_cur = [(_currentArray select _i)] call sb_getIconHealth;
 				
 				if (_last != _cur) then {
-					_toUpdate set [_i,1];
+					_toUpdateHealth set [_i,1];
+					_statchanged = true;
+				};
+				
+			};
+			_toUpdateHunger = [0,0,0];
+			for "_i" from 0 to 2 do
+			{
+				_last = [(_lastArray select _i)] call sb_getIconHunger;
+				_cur = [(_currentArray select _i)] call sb_getIconHunger;
+				
+				if (_last != _cur) then {
+					_toUpdateHunger set [_i,1];
+					_statchanged = true;
+				};
+				
+			};
+			_toUpdateThirst = [0,0,0];
+			for "_i" from 0 to 2 do
+			{
+				_last = [(_lastArray select _i)] call sb_getIconThirst;
+				_cur = [(_currentArray select _i)] call sb_getIconThirst;
+				
+				if (_last != _cur) then {
+					_toUpdateThirst set [_i,1];
 					_statchanged = true;
 				};
 				
@@ -247,21 +290,21 @@
 				
 				player setVariable ["sb_lastArray", [_health,_hunger,_thirst]];
 				
-				_currentHp = [_health] call sb_getIcon;
-				_currentFood =  [_hunger] call sb_getIcon;
-				_currentThirst = [_thirst] call sb_getIcon;
+				_currentHp = [_health] call sb_getIconHealth;
+				_currentFood =  [_hunger] call sb_getIconHunger;
+				_currentThirst = [_thirst] call sb_getIconThirst;
 				
 				_upHp = "-1";
 				_upHunger = "-1";
 				_upThirst = "-1";
 				
-				if ((_toUpdate select 0) == 1) then {
+				if ((_toUpdateBlood select 0) == 1) then {
 					_upHp = _currentHp;
 				};
-				if ((_toUpdate select 1) == 1) then {
+				if ((_toUpdateHunger select 1) == 1) then {
 					_upHunger = _currentFood;
 				};
-				if ((_toUpdate select 2) == 1) then {
+				if ((_toUpdateThirst select 2) == 1) then {
 					_upThirst = _currentThirst;
 				};
 			
@@ -270,14 +313,14 @@
 			};
 				[] call sb_checkTemp;
 				[] call sb_maintainInfo;
-				//[] call sb_hideExileIcons;
+				[] call sb_hideExileIcons;
 				
 				
 				_disp = (uiNamespace getVariable "StatusIcons");
 				if (isNull _disp) then {
 					if (alive player) then {
 					
-					systemChat "Status Icons closed. Redrawing.";	
+					systemChat "DayZ Icons closed. Redrawing.";	
 					_rscLayer = "StatusIcons" call BIS_fnc_rscLayer; 
 					_rscLayer = cutRsc["StatusIcons","PLAIN",1,false];
 					[] call sb_init;
@@ -288,10 +331,10 @@
 	};
 	
 	
-	diag_log "starting status icons";
+	diag_log "starting DayZ icons";
 	[] call sb_init;
 	[0.5, sb_maintain, [], true] call ExileClient_system_thread_addtask;
-	//uiSleep 5;
-	//[] call sb_hideExileIcons;
+	uiSleep 5;
+	[] call sb_hideExileIcons;
 
 
